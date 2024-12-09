@@ -10,4 +10,5 @@ public interface UserRepository {
     public boolean removeUser(int id);
 
     public User getById(int id);
+    public boolean addUser(User user);
 }

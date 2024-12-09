@@ -90,5 +90,22 @@ public class UserRepositoryImpl extends AbstractDao implements UserRepository {
         return result;
     }
 
+    @Override
+    public boolean addUser(User user) {
+        try (Connection c = connection()){
+            PreparedStatement stmt = c.prepareStatement("insert into  user (name,surname,phone,email) values (?,?,?,?)");
+            stmt.setString(1, user.getName());
+            stmt.setString(2, user.getSurname());
+            stmt.setString(3, user.getPhone());
+            stmt.setString(4, user.getEmail());
+
+            return stmt.execute();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+
 }
 
