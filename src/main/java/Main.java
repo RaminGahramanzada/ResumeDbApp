@@ -14,9 +14,7 @@ public class Main {
         UserRepository userRepository = new UserRepositoryImpl();
 
 
-
-        List<User> list = userRepository.getAll();
-        System.out.println(list);
+        System.out.println(userRepository.getAllSkillByUserId(5));
 
 
     }

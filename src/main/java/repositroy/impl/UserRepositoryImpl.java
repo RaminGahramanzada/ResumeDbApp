@@ -1,7 +1,9 @@
 package repositroy.impl;
 
-import model.Nationality;
+import model.Country;
+import model.Skill;
 import model.User;
+import model.UserSkill;
 import repositroy.inter.AbstractDao;
 import repositroy.inter.UserRepository;
 
@@ -26,10 +28,21 @@ public class UserRepositoryImpl extends AbstractDao implements UserRepository {
             String birthPlaceStr = rs.getString("birthplace");
             Date birthDate = rs.getDate("birthdate");
 
-            Nationality nationality = new Nationality(nationalityId,nationalityStr,null);
-            Nationality birthPlace = new Nationality(birthPlaceId,birthPlaceStr,null);
+            Country nationality = new Country(nationalityId,null,nationalityStr);
+            Country birthPlace = new Country(birthPlaceId,birthPlaceStr,null);
 
            return new User(id, name, surname, phone, email,birthDate,nationality,birthPlace);
+    }
+
+    public UserSkill getUserSkill(ResultSet rs) throws Exception{
+        int userId = rs.getInt("id");
+        int skillId = rs.getInt("skill_id");
+
+        String skillName = rs.getString("skill_name");
+        int power = rs.getInt("power");
+
+        User user = getById(userId);
+        return new UserSkill(null,new User(userId),new Skill(skillId,skillName),power);
     }
 
     @Override
@@ -38,13 +51,13 @@ public class UserRepositoryImpl extends AbstractDao implements UserRepository {
 
         try (Connection c = connection()) {
             Statement stmt = c.createStatement();
-            stmt.execute("SELECT"
+            stmt.execute("SELECT "
                     + "u.*,"
-                    + "n.name as nationality,"
-                    + "c.country_name as birthplace"
-                    + "FROM `user` u"
-                    + "LEFT JOIN nationality n ON u.nationality_id = n.id"
-                    + "LEFT JOIN nationality c ON u.birthplace_id = c.id");
+                    + "n.nationality, "
+                    + "c.name as birthplace "
+                    + "FROM `user` u "
+                    + "LEFT JOIN country n ON u.nationality_id = n.id "
+                    + "LEFT JOIN country c ON u.birthplace_id = c.id ");
             ResultSet rs = stmt.getResultSet();
 
             while (rs.next()) {
@@ -94,13 +107,13 @@ public class UserRepositoryImpl extends AbstractDao implements UserRepository {
 
         try (Connection c = connection()) {
             Statement stmt = c.createStatement();
-            stmt.execute("SELECT"
-                   + "u.*,"
-                   + "n.name as nationality,"
-                   + "c.country_name as birthplace"
-                   + "FROM `user` u"
-                   + "LEFT JOIN nationality n ON u.nationality_id = n.id"
-                   + "LEFT JOIN nationality c ON u.birthplace_id = c.id where u.id="+userId);
+            stmt.execute("SELECT "
+                    + "u.*,"
+                    + "n.nationality, "
+                    + "c.name as birthplace "
+                    + "FROM `user` u "
+                    + "LEFT JOIN country n ON u.nationality_id = n.id "
+                    + "LEFT JOIN country c ON u.birthplace_id = c.id  where  u.id="+userId);
             ResultSet rs = stmt.getResultSet();
 
             while (rs.next()) {
@@ -126,6 +139,36 @@ public class UserRepositoryImpl extends AbstractDao implements UserRepository {
             ex.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public List<UserSkill> getAllSkillByUserId(int userId) {
+        List<UserSkill> result = new ArrayList<>();
+
+        try (Connection c = connection()) {
+            PreparedStatement stmt = c.prepareStatement("SELECT "
+                   + "  u.*, "
+                   + "  us.skill_id, "
+                   + "  s.NAME AS skill_name, "
+                   + "  us.power "
+                   + "FROM "
+                   + "  user_skill us "
+                   + "  LEFT JOIN USER u ON us.user_id = u.id "
+                   + "  LEFT JOIN skill s ON us.skill_id = s.id "
+                   + "WHERE "
+                   + "  us.user_id = ?");
+            stmt.setInt(1,userId);
+            stmt.execute();
+            ResultSet rs = stmt.getResultSet();
+
+            while (rs.next()) {
+                UserSkill u = getUserSkill(rs);
+                result.add(u);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(UserRepositoryImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
     }
 
 

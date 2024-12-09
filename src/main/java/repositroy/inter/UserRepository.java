@@ -1,6 +1,7 @@
 package repositroy.inter;
 
 import model.User;
+import model.UserSkill;
 
 import java.util.List;
 
@@ -11,4 +12,6 @@ public interface UserRepository {
 
     public User getById(int id);
     public boolean addUser(User user);
+
+    public List<UserSkill> getAllSkillByUserId(int userId);
 }
