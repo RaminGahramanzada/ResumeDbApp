@@ -3,15 +3,12 @@ package repositroy.impl;
 import model.Skill;
 import repositroy.inter.AbstractDao;
 import repositroy.inter.SkillRepository;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-
-import static javax.management.remote.JMXConnectorFactory.connect;
 
 public class SkillRepositoryImpl extends AbstractDao implements SkillRepository {
 
@@ -45,23 +42,20 @@ public class SkillRepositoryImpl extends AbstractDao implements SkillRepository 
         Connection conn;
         try {
             conn = connection();
-
             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM skill WHERE ID = ?");
             stmt.setInt(1, userId);
-            stmt.execute();
 
-            ResultSet rs = stmt.getResultSet();
+            ResultSet rs = stmt.executeQuery();
 
-            while (rs.next()) {
-
+            if (rs.next()) {
                 int id = rs.getInt("Id");
                 String name = rs.getString("name");
 
                 usr = new Skill(id, name);
-
             }
-        } catch (Exception ex) {
 
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
         return usr;
     }
@@ -75,7 +69,13 @@ public class SkillRepositoryImpl extends AbstractDao implements SkillRepository 
             PreparedStatement stmt = conn.prepareStatement("UPDATE skill SET name=? WHERE id= ?");
             stmt.setString(1, u.getName());
             stmt.setInt(2, u.getId());
-            b = stmt.execute();
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                b = true;
+            } else {
+                b = false;
+            }
 
         } catch (Exception ex) {
             System.err.println(ex);
@@ -89,16 +89,19 @@ public class SkillRepositoryImpl extends AbstractDao implements SkillRepository 
         boolean b = true;
         try {
             conn = connection();
-            PreparedStatement stmt = conn.prepareStatement("insert skill (name) VALUES (?);", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement stmt = conn.prepareStatement("INSERT INTO skill (name) VALUES (?);", Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, skl.getName());
-            b = stmt.execute();
 
-            ResultSet generatedKeys = stmt.getGeneratedKeys();
-
-            if (generatedKeys.next()) {
-                skl.setId(generatedKeys.getInt(1));
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                ResultSet generatedKeys = stmt.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    skl.setId(generatedKeys.getInt(1));
+                }
+                b = true;
+            } else {
+                b = false;
             }
-
         } catch (Exception ex) {
             System.err.println(ex);
             b = false;
@@ -114,7 +117,10 @@ public class SkillRepositoryImpl extends AbstractDao implements SkillRepository 
 
             PreparedStatement stmt = conn.prepareStatement("DELETE FROM skill WHERE id=?;");
             stmt.setInt(1, id);
-            return stmt.execute();
+
+            int rowsAffected = stmt.executeUpdate();
+
+            return rowsAffected > 0;
 
         } catch (Exception ex) {
             System.err.println(ex);
@@ -128,24 +134,20 @@ public class SkillRepositoryImpl extends AbstractDao implements SkillRepository 
         Connection conn;
         try {
             conn = connection();
-
             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM skill WHERE name LIKE ?;");
-            stmt.setString(1, sname);
+            stmt.setString(1, "%" + sname + "%");
             stmt.execute();
 
             ResultSet rs = stmt.getResultSet();
-
             while (rs.next()) {
-
                 int id = rs.getInt("Id");
                 String name = rs.getString("name");
                 list.add(new Skill(id, name));
-
             }
         } catch (Exception ex) {
-            System.err.println("Houston, we have a problem");
+            System.err.println("ERROR");
+            ex.printStackTrace();
         }
         return list;
     }
-
 }
