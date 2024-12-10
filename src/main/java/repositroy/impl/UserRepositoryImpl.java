@@ -63,19 +63,22 @@ public class UserRepositoryImpl extends AbstractDao implements UserRepository {
     @Override
     public boolean updateUser(User user) {
         try (Connection c = connection()) {
-            PreparedStatement stmt = c.prepareStatement("update user set name=?,surname=?,phone=?,email=? where id=?");
+            PreparedStatement stmt = c.prepareStatement(
+                    "UPDATE user SET name=?, surname=?, phone=?, email=? WHERE id=?"
+            );
             stmt.setString(1, user.getName());
             stmt.setString(2, user.getSurname());
             stmt.setString(3, user.getPhone());
             stmt.setString(4, user.getEmail());
             stmt.setInt(5, user.getId());
 
-            return stmt.execute();
+            return stmt.executeUpdate() > 0; // execute yerine executeUpdate
         } catch (Exception ex) {
             ex.printStackTrace();
             return false;
         }
     }
+
 
     @Override
     public boolean removeUser(int id) {
