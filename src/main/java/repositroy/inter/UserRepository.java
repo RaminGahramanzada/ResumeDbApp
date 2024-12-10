@@ -13,5 +13,5 @@ public interface UserRepository {
     public User getById(int id);
     public boolean addUser(User user);
 
-    public List<UserSkill> getAllSkillByUserId(int userId);
+
 }
