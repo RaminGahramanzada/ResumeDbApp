@@ -6,9 +6,9 @@ import java.sql.SQLException;
 
 public abstract class AbstractDao {
     public  Connection connection() throws SQLException, ClassNotFoundException {
-        String url = "jdbc:mysql://localhost:3306/resumeappdb";
+        String url = "jdbc:mysql://localhost:3306/yourdb";
         String username ="root";
-        String password = "15466451";
+        String password = "yourpassword";
         Connection c = DriverManager.getConnection(url,username,password);
         return c;
     }
