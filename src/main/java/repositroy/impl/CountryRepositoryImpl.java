@@ -71,37 +71,35 @@ public class CountryRepositoryImpl extends AbstractDao implements CountryReposit
     }
 
     @Override
-    public boolean updateCountry(Country u) {
-        Connection conn;
-        boolean b = true;
-        try {
-            conn = connection();
-            PreparedStatement stmt = conn.prepareStatement("UPDATE country SET name=?,nationality=? WHERE id= ?");
-            stmt.setString(1, u.getName());
-            stmt.setString(2, u.getNationality());
-            stmt.setInt(3, u.getId());
-            b = stmt.execute();
-
-        } catch (Exception ex) {
-            System.err.println(ex);
-            b = false;
+    public boolean updateCountry(Country country) {
+        String sql = "UPDATE country SET name = ?, nationality = ? WHERE id = ?";
+        try (PreparedStatement stmt = connection().prepareStatement(sql)) {
+            stmt.setString(1, country.getName());
+            stmt.setString(2, country.getNationality());
+            stmt.setInt(3, country.getId());
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
-        return b;
     }
+
 
     @Override
     public boolean removeCountry(int id) {
-        Connection conn;
-        try {
-            conn = connection();
-
-            PreparedStatement stmt = conn.prepareStatement("DELETE FROM country WHERE id=?;");
+        String sql = "DELETE FROM country WHERE id = ?";
+        try (PreparedStatement stmt = connection().prepareStatement(sql)) {
             stmt.setInt(1, id);
-
-            return stmt.execute();
-        } catch (Exception ex) {
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
             return false;
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
+
 
 }
